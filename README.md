@@ -11,18 +11,18 @@ FreeBSD 10.0
 ## Getting Started
 1. Install qjail:
 
-    pkg install qjail
-    man qjail-intro
-    man qjail
-    man qjail-howto
+	pkg install qjail
+	man qjail-intro
+	man qjail
+	man qjail-howto
 
 2. Clone this scripts:
 
-    git clone git://github.com/kunst1080/jail-create.git
+	git clone git://github.com/kunst1080/jail-create.git
 
 3. Please read my Usage:
 
-    $PATH_TO_THIS/jail-create --help
+	$PATH_TO_THIS/jail-create --help
 
 This script requires root control for qjail(8) and cp|mv|write for /usr/jails/.
 Using this scripts, you have to use su or sudo.
