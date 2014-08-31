@@ -32,14 +32,14 @@ assert() {
 
 # setup
 cd $DIR/..
-usage="USAGE:jail-create -4 ip_address -f user_flavor [ -s sshkey ] [ -y -P root_password -u default_user -p default_user_password ] jail_name"
+usage="USAGE:jail-deploy -4 ip_address -f user_flavor [ -s sshkey ] [ -y -P root_password -u default_user -p default_user_password ] jail_name"
 test_ip=10.0.0.99
 test_flavor=NONE
 test_name=testjail
 test_sshkey=$HOME/.ssh/authorized_keys
 
 # tests - OK
-assert "sudo ./jail-create -4 $test_ip -f $test_flavor -s $test_sshkey -y -P 1234 -u bbb -p 1111 $test_name && grep 'sshd_enable=\"YES\"' /usr/jails/$test_name/etc/rc.conf && grep 'Port 22' /usr/jails/$test_name/etc/ssh/sshd_config" \
+assert "sudo ./jail-deploy -4 $test_ip -f $test_flavor -s $test_sshkey -y -P 1234 -u bbb -p 1111 $test_name && grep 'sshd_enable=\"YES\"' /usr/jails/$test_name/etc/rc.conf && grep 'Port 22' /usr/jails/$test_name/etc/ssh/sshd_config" \
   "sudo qjail stop $test_name && sudo qjail delete $test_name" <<++EOS
 
 I will create a Jail with the following.
@@ -76,7 +76,7 @@ Port 22
 
 vmode=0
 
-assert "yes | head -1 | awk '{print \"1234\\naaa\\n1111\\ny\"}' | sudo ./jail-create -4 $test_ip -f $test_flavor $test_name" \
+assert "yes | head -1 | awk '{print \"1234\\naaa\\n1111\\ny\"}' | sudo ./jail-deploy -4 $test_ip -f $test_flavor $test_name" \
   "sudo qjail stop $test_name && sudo qjail delete $test_name" <<++EOS
 Input root password: Input default username: Input default user password: 
 I will create a Jail with the following.
@@ -111,55 +111,55 @@ Setuping users
 
 
 # tests -NG
-assert "./jail-create" <<++EOS
+assert "./jail-deploy" <<++EOS
 $usage
 ++EOS
 
-assert "./jail-create -4" <<++EOS
+assert "./jail-deploy -4" <<++EOS
 No arg for -4 option
 $usage
 ++EOS
 
-assert "./jail-create -4 $test_ip" <<++EOS
+assert "./jail-deploy -4 $test_ip" <<++EOS
 $usage
 ++EOS
 
-assert "./jail-create -f" <<++EOS
+assert "./jail-deploy -f" <<++EOS
 No arg for -f option
 $usage
 ++EOS
 
-assert "./jail-create -f hoge" <<++EOS
+assert "./jail-deploy -f hoge" <<++EOS
 $usage
 ++EOS
 
-assert "./jail-create -f -4 hoge" <<++EOS
+assert "./jail-deploy -f -4 hoge" <<++EOS
 $usage
 ++EOS
 
-assert "./jail-create -4 $test_ip -f $test_flavor -y $test_name" <<++EOS
+assert "./jail-deploy -4 $test_ip -f $test_flavor -y $test_name" <<++EOS
 $usage
 ++EOS
 
-assert "./jail-create -4 $test_ip -f $test_flavor -y -P" <<++EOS
+assert "./jail-deploy -4 $test_ip -f $test_flavor -y -P" <<++EOS
 No arg for -P option
 $usage
 ++EOS
 
-assert "./jail-create -4 $test_ip -f $test_flavor -y -P 1234 $test_name" <<++EOS
+assert "./jail-deploy -4 $test_ip -f $test_flavor -y -P 1234 $test_name" <<++EOS
 $usage
 ++EOS
 
-assert "./jail-create -4 $test_ip -f $test_flavor -y -P 1234 -u" <<++EOS
+assert "./jail-deploy -4 $test_ip -f $test_flavor -y -P 1234 -u" <<++EOS
 No arg for -u option
 $usage
 ++EOS
 
-assert "./jail-create -4 $test_ip -f $test_flavor -y -P 1234 -u a $test_name" <<++EOS
+assert "./jail-deploy -4 $test_ip -f $test_flavor -y -P 1234 -u a $test_name" <<++EOS
 $usage
 ++EOS
 
-assert "./jail-create -4 $test_ip -f $test_flavor -y -P 1234 -u a -p" <<++EOS
+assert "./jail-deploy -4 $test_ip -f $test_flavor -y -P 1234 -u a -p" <<++EOS
 No arg for -p option
 $usage
 ++EOS

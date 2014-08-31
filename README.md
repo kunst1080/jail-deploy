@@ -1,7 +1,7 @@
-jail-create
+jail-deploy
 ===
 
-jail-create is a wrapper script of qjail(8) for deployment of jail environments with user-flavor.
+jail-deploy is a wrapper script of qjail(8) for deployment of jail environments with user-flavor.
 
 You can deploy jail environment with your flavor which is owned by normal user, and you can maintain flavors with VCS.
 
@@ -21,13 +21,13 @@ FreeBSD 10.0
 2. Clone this scripts:
 
   ```bash
-  git clone git://github.com/kunst1080/jail-create.git
+  git clone git://github.com/kunst1080/jail-deploy.git
   ```
 
 3. Please read my Usage:
 
   ```bash
-  $PATH_TO_THIS/jail-create
+  $PATH_TO_THIS/jail-deploy
   ```
 
 This script requires root control for qjail(8) and cp|mv|write for /usr/jails/.
