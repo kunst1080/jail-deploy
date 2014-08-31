@@ -1,0 +1,169 @@
+#!/bin/sh
+set -u
+
+# framework
+readonly TMP=/tmp/$(basename $0).$$
+readonly DIR=$(dirname $0)
+vmode=0
+if [ $# -ge 1 ]; then
+  if [ "_$1" = "_-v" ]; then
+    vmode=1
+  fi
+fi
+result=0
+assert() {
+  cat >$TMP-expected
+  echo $1 | sh >$TMP-actual 2>&1
+  sdiff -s $TMP-expected $TMP-actual
+  res=$?
+  result=$(expr $result + $res)
+  if [ $res -ne 0 ]; then
+    echo "test failed!!: $1"
+    echo
+  fi
+  if [ $vmode -eq 1 ]; then
+    cat $TMP-actual
+    echo
+  fi
+  if [ $# -ge 2 ]; then
+    echo $2 | sh 1>/dev/null
+  fi
+}
+
+# setup
+cd $DIR/..
+usage="USAGE:jail-create -4 ip_address -f user_flavor [ -s sshkey ] [ -y -P root_password -u default_user -p default_user_password ] jail_name"
+test_ip=10.0.0.99
+test_flavor=NONE
+test_name=testjail
+test_sshkey=$HOME/.ssh/authorized_keys
+
+# tests - OK
+assert "sudo ./jail-create -4 $test_ip -f $test_flavor -s $test_sshkey -y -P 1234 -u bbb -p 1111 $test_name && grep 'sshd_enable=\"YES\"' /usr/jails/$test_name/etc/rc.conf && grep 'Port 22' /usr/jails/$test_name/etc/ssh/sshd_config" \
+  "sudo qjail stop $test_name && sudo qjail delete $test_name" <<++EOS
+
+I will create a Jail with the following.
+  jail_name :$test_name
+  ip_address :$test_ip
+  user_flavor :$test_flavor
+  sshkey :$test_sshkey
+  root_password :1234
+  default_user :bbb
+  default_user_password:1111
+
+
+--- SETUP START ---
+Creating a Jail
+Successfully created  testjail
+Successful enabled allow.raw_sockets for testjail
+
+Running initial setting scripts
+ /usr/jails/testjail/etc/rc.conf
+ /usr/jails/testjail/etc/ssh/sshd_config
+
+Starting Jail
+Jail successfully started  testjail
+
+Setuping users
+ setuping root password
+ setuping default_user
+ cp $test_sshkey /usr/jails/${test_name}/home/bbb/.ssh/
+
+--- SETUP END ---
+sshd_enable="YES"
+Port 22
+++EOS
+
+vmode=0
+
+assert "yes | head -1 | awk '{print \"1234\\naaa\\n1111\\ny\"}' | sudo ./jail-create -4 $test_ip -f $test_flavor $test_name" \
+  "sudo qjail stop $test_name && sudo qjail delete $test_name" <<++EOS
+Input root password: Input default username: Input default user password: 
+I will create a Jail with the following.
+  jail_name :$test_name
+  ip_address :$test_ip
+  user_flavor :$test_flavor
+  sshkey :
+  root_password :1234
+  default_user :aaa
+  default_user_password:1111
+
+create? [y/n]: 
+
+--- SETUP START ---
+Creating a Jail
+Successfully created  testjail
+Successful enabled allow.raw_sockets for testjail
+
+Running initial setting scripts
+ /usr/jails/testjail/etc/rc.conf
+ /usr/jails/testjail/etc/ssh/sshd_config
+
+Starting Jail
+Jail successfully started  testjail
+
+Setuping users
+ setuping root password
+ setuping default_user
+
+--- SETUP END ---
+++EOS
+
+
+# tests -NG
+assert "./jail-create" <<++EOS
+$usage
+++EOS
+
+assert "./jail-create -4" <<++EOS
+No arg for -4 option
+$usage
+++EOS
+
+assert "./jail-create -4 $test_ip" <<++EOS
+$usage
+++EOS
+
+assert "./jail-create -f" <<++EOS
+No arg for -f option
+$usage
+++EOS
+
+assert "./jail-create -f hoge" <<++EOS
+$usage
+++EOS
+
+assert "./jail-create -f -4 hoge" <<++EOS
+$usage
+++EOS
+
+assert "./jail-create -4 $test_ip -f $test_flavor -y $test_name" <<++EOS
+$usage
+++EOS
+
+assert "./jail-create -4 $test_ip -f $test_flavor -y -P" <<++EOS
+No arg for -P option
+$usage
+++EOS
+
+assert "./jail-create -4 $test_ip -f $test_flavor -y -P 1234 $test_name" <<++EOS
+$usage
+++EOS
+
+assert "./jail-create -4 $test_ip -f $test_flavor -y -P 1234 -u" <<++EOS
+No arg for -u option
+$usage
+++EOS
+
+assert "./jail-create -4 $test_ip -f $test_flavor -y -P 1234 -u a $test_name" <<++EOS
+$usage
+++EOS
+
+assert "./jail-create -4 $test_ip -f $test_flavor -y -P 1234 -u a -p" <<++EOS
+No arg for -p option
+$usage
+++EOS
+
+# end
+rm $TMP-*
+exit $result

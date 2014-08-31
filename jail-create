@@ -1,79 +1,100 @@
 #!/bin/sh
+# @(#) ver 1.0.0 2014.08.31
+set -ue
 
-USAGE(){
-cat <<++EOS >&2
-USAGE:`basename $0` jail_name ip_address user_flavor [ -y root_password default_user default_user_password ]
+USAGE_EXIT(){
+  cat <<++EOS >&2
+USAGE:`basename $0` -4 ip_address -f user_flavor [ -s sshkey ] [ -y -P root_password -u default_user -p default_user_password ] jail_name
 ++EOS
+  exit 9
 }
 
-# const
-PREFIX=/usr/jails
-NIC=em1
+readonly DIR=$(dirname `realpath $0`)
+readonly PREFIX=/usr/jails
+readonly NIC=em1
 
-# ---------- PREPARING ----------
-# parse input
-if [ "_$3" = "_" ] ; then
-	USAGE
-	exit 9
+# get parameters
+jail_name=""
+ip_address=""
+user_flavor=""
+sshkey=""
+batchmode=0
+root_password=""
+default_user=""
+default_user_password=""
+while getopts "4:f:s:yP:u:p:" args
+do
+  case $args in
+    4) ip_address=$OPTARG;;
+    f) user_flavor=$OPTARG;;
+    s) sshkey=$OPTARG;;
+    y) batchmode=1;;
+    P) root_password=$OPTARG;;
+    u) default_user=$OPTARG;;
+    p) default_user_password=$OPTARG;;
+    \?) USAGE_EXIT;;
+  esac
+done
+shift $(expr $OPTIND - 1)
+if [ $# -eq 0 ]; then
+  USAGE_EXIT
 fi
-jail_name=$1
-ip_address=$2
-user_flavor=$3
-if [ "_$4" = "_-y" ] ; then
-	if [ "_$7" = "_" ] ; then
-		USAGE
-		exit 9
-	fi
-	is_silent=$4
-	root_password=$5
-	default_user=$6
-	default_user_password=$7
+jail_name="$1"
+
+# check parameters
+if [ "_$ip_address" = "_" -o \
+    "_$user_flavor" = "_" -o \
+    "_$jail_name" = "_" ]; then
+  USAGE_EXIT
+fi
+if [ $batchmode -eq 1 ]; then
+  if [ "_$root_password" = "_" -o \
+    "_$default_user" = "_" -o \
+    "_$default_user_password" = "_" ]; then
+    USAGE_EXIT
+  fi
 else
-	is_silent=""
-	echo -n "Input root password: "
-	read root_password
-	echo -n "Input default username: "
-	read default_user
-	echo -n "Input default user password: "
-	read default_user_password
+  echo -n "Input root password: "
+  read root_password
+  echo -n "Input default username: "
+  read default_user
+  echo -n "Input default user password: "
+  read default_user_password
 fi
 
-# check input
-if [ "$user_flavor" != "NONE" ] ; then
-	if [ ! -d "$user_flavor" ] ; then
-		echo "not existing or not directory: ${user_flavor}"
-		exit 9
-	fi
+# check jails
+if qjail list | awk '{print $5}' | grep -x -q "$jail_name" ; then
+  echo "existing jail_name: $jail_name"
+  exit 9
 fi
-if qjail list | awk '{print $5}' | grep -x -q "${jail_name}" ; then
-	echo "existing jail_name: ${jail_name}"
-	exit 9
-fi
-if qjail list | awk '{print $4}' | grep -x -q "${ip_address}" ; then
-	echo "existing ip_address: ${ip_address}"
-	exit 9
+if qjail list | awk '{print $4}' | grep -x -q "$ip_address" ; then
+  echo "existing ip_address: $ip_address"
+  exit 9
 fi
 
+# confirm
 cat <<++EOS
 
 I will create a Jail with the following.
-  jail_name :${jail_name}
-  ip_address :${ip_address}
-  user_flavor :${user_flavor}
-  root_password :${root_password}
-  default_user :${default_user}
-  default_user_password:${default_user_password}
+  jail_name :$jail_name
+  ip_address :$ip_address
+  user_flavor :$user_flavor
+  sshkey :$sshkey
+  root_password :$root_password
+  default_user :$default_user
+  default_user_password:$default_user_password
 
 ++EOS
-if [ "${is_silent}" != "-y" ] ; then
-	echo -n 'create? [y/n]: '
-	read YN
-	if [ "$YN" != "y" -a "$YN" != "yes" ]; then
-		exit 9
-	fi
+if [ $batchmode -eq 0 ] ; then
+  echo -n 'create? [y/n]: '
+  read YN
+  if [ "$YN" != "y" -a "$YN" != "yes" ]; then
+    exit 9
+  fi
+  echo
 fi
 
-# ---------- MAIN ----------
+# create
 echo
 echo "--- SETUP START ---"
 
@@ -82,27 +103,10 @@ qjail create -n $NIC -4 $ip_address $jail_name
 qjail config -k $jail_name
 
 echo
-echo "Modifiying global settings"
-echo " /etc/ssh/sshd_config"
-cp -p ${PREFIX}/${jail_name}/etc/ssh/sshd_config ${PREFIX}/${jail_name}/etc/ssh/sshd_config.org
-cat ${PREFIX}/${jail_name}/etc/ssh/sshd_config.org \
-	| sed "s/^#Port 22/Port 22/g" \
-	| sed "s/^#ListenAddress 0.0.0.0/ListenAddress ${ip_address}/g" \
-	| sed "s/^#Protocol 2/Protocol 2/g" \
-	| sed "s/^#PermitRootLogin no/PermitRootLogin no/g" \
-	| sed "s/^#RSAAuthentication yes/RSAAuthentication yes/g" \
-	| sed "s/^#PubkeyAuthentication yes/PubkeyAuthentication yes/g" \
-	| sed "s/^#PasswordAuthentication no/PasswordAuthentication no/g" \
-	| sed "s/^#PermitEmptyPasswords no/PermitEmptyPasswords no/g" \
-	| sed "s/^#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/g" \
-	| sed "s/^#UseDNS yes/UseDNS no/g" \
-	> ${PREFIX}/${jail_name}/etc/ssh/sshd_config
-echo " /etc/rc.conf"
-cp -p ${PREFIX}/${jail_name}/etc/rc.conf ${PREFIX}/${jail_name}/etc/rc.conf.org
-cat <<++EOS >> ${PREFIX}/${jail_name}/etc/rc.conf
-
-sshd_enable="YES"
-++EOS
+echo "Running initial setting scripts"
+for rc_elem in $(find $DIR/rc.init/*.rc); do
+  . $rc_elem
+done
 
 echo
 echo "Starting Jail"
@@ -111,28 +115,37 @@ qjail start $jail_name
 echo
 echo "Setuping users"
 echo " setuping root password"
-jexec $jail_name sh -c "echo ${root_password} | pw usermod -n root -h 0"
+jexec $jail_name sh -c "echo $root_password | pw usermod -n root -h 0"
 echo " setuping default_user"
-jexec $jail_name sh -c "echo ${default_user_password} | pw useradd -n ${default_user} -G wheel -m -h 0"
+jexec $jail_name sh -c "echo $default_user_password | pw useradd -n $default_user -G wheel -m -h 0"
+if [ "_$sshkey" != "_" ]; then
+  if [ -f $sshkey ]; then
+    echo " cp $sshkey ${PREFIX}/${jail_name}/home/${default_user}/.ssh/"
+    jexec -U $default_user $jail_name sh -c "cd /home/${default_user} && mkdir .ssh && chmod 700 .ssh"
+    cp $sshkey ${PREFIX}/${jail_name}/home/${default_user}/.ssh/
+    jexec $jail_name sh -c "chown ${default_user}:${default_user} /home/${default_user}/.ssh/*"
+    jexec -U $default_user $jail_name sh -c "chmod 600 /home/${default_user}/.ssh/*"
+  fi
+fi
 
 # apply user_flavor
 if [ "$user_flavor" != "NONE" ]; then
-	echo
-	echo "Applying user_flavor"
-	cp -vR ${user_flavor}/* ${PREFIX}/${jail_name}/
-	jexec $jail_name sh -c "chown -R ${default_user}:${default_user} /home/${default_user}/"
+  echo
+  echo "Applying user_flavor"
+  cp -vR ${user_flavor}/* ${PREFIX}/${jail_name}/
+  jexec $jail_name sh -c "chown -R ${default_user}:${default_user} /home/${default_user}/"
 fi
 
 # run scripts
 if [ -x ${user_flavor}/rc.root ] ; then
-	echo
-	echo "Running /rc.root"
-	jexec $jail_name /rc.root
+  echo
+  echo "Running /rc.root"
+  jexec $jail_name /rc.root
 fi
 if [ -x ${user_flavor}/rc.user ] ; then
-	echo
-	echo "Running /rc.user"
-	jexec -U ${default_user} $jail_name /rc.user
+  echo
+  echo "Running /rc.user"
+  jexec -U ${default_user} $jail_name /rc.user
 fi
 
 echo

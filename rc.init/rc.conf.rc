@@ -1,0 +1,6 @@
+echo " ${PREFIX}/${jail_name}/etc/rc.conf"
+cp -p ${PREFIX}/${jail_name}/etc/rc.conf ${PREFIX}/${jail_name}/etc/rc.conf.org
+cat <<++EOS >>${PREFIX}/${jail_name}/etc/rc.conf
+
+sshd_enable="YES"
+++EOS
