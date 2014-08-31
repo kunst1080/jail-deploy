@@ -3,7 +3,7 @@ jail-create
 
 jail-create is a wrapper script of qjail(8) for deployment of jail environments with user-flavor.
 
-You can depoly jail environment with your flavor which is owned by normal user, and you can maintain flavors with VCS.
+You can deploy jail environment with your flavor which is owned by normal user, and you can maintain flavors with VCS.
 
 ## Platform
 FreeBSD 10.0
