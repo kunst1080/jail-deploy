@@ -1,0 +1,2 @@
+PREFIX=/usr/jails
+NIC=em0

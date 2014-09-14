@@ -10,8 +10,20 @@ USAGE:`basename $0` -4 ip_address -f user_flavor [ -s sshkey ] [ -y -P root_pass
 }
 
 readonly DIR=$(dirname `realpath $0`)
-readonly PREFIX=/usr/jails
-readonly NIC=em1
+readonly PARAMFILE=$DIR/deploy.conf
+PREFIX=/usr/jails
+NIC=em0
+if [ -r $PARAMFILE ]; then
+  readonly PARAM_CONTENT=`cat $PARAMFILE`
+  tmpval=$(echo "$PARAM_CONTENT" | awk -F"=" '$1 ~ /^PREFIX$/{print $2}')
+  if [ "_$tmpval" != "_" ]; then
+    PREFIX=$tmpval
+  fi
+  tmpval=$(echo "$PARAM_CONTENT" | awk -F"=" '$1 ~ /^NIC$/{print $2}')
+  if [ "_$tmpval" != "_" ]; then
+    NIC=$tmpval
+  fi
+fi
 
 # get parameters
 jail_name=""
