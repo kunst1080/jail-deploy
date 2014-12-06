@@ -67,7 +67,7 @@ Jail successfully started  testjail
 Setuping users
  setuping root password
  setuping default_user
- cp $test_sshkey /usr/jails/${test_name}/home/bbb/.ssh/
+ cp $test_sshkey /usr/jails/${test_name}/home/bbb/.ssh/authorized_keys
 
 --- SETUP END ---
 sshd_enable="YES"

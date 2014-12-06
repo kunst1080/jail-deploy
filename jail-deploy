@@ -132,9 +132,9 @@ echo " setuping default_user"
 jexec $jail_name sh -c "echo $default_user_password | pw useradd -n $default_user -G wheel -m -h 0"
 if [ "_$sshkey" != "_" ]; then
   if [ -f $sshkey ]; then
-    echo " cp $sshkey ${PREFIX}/${jail_name}/home/${default_user}/.ssh/"
+    echo " cp $sshkey ${PREFIX}/${jail_name}/home/${default_user}/.ssh/authorized_keys"
     jexec -U $default_user $jail_name sh -c "cd /home/${default_user} && mkdir .ssh && chmod 700 .ssh"
-    cp $sshkey ${PREFIX}/${jail_name}/home/${default_user}/.ssh/
+    cp $sshkey ${PREFIX}/${jail_name}/home/${default_user}/.ssh/authorized_keys
     jexec $jail_name sh -c "chown ${default_user}:${default_user} /home/${default_user}/.ssh/*"
     jexec -U $default_user $jail_name sh -c "chmod 600 /home/${default_user}/.ssh/*"
   fi
