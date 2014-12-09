@@ -5,6 +5,13 @@ set -ue
 USAGE_EXIT(){
   cat <<++EOS >&2
 USAGE:`basename $0` -4 ip_address -f user_flavor [ -s sshkey ] [ -y -P root_password -u default_user -p default_user_password ] jail_name
+
+user_flavor files
+    - rc.root   Initial-Script executed by root.
+    - rc.local  Initial-Script executed by default_user.
+    - pkg.list  Packages for pkg install.
+    - ELSE      Copy to new jail.
+
 ++EOS
   exit 9
 }
@@ -149,6 +156,11 @@ if [ "$user_flavor" != "NONE" ]; then
 fi
 
 # run scripts
+if [ -r ${user_flavor}/pkg.list ] ; then
+  echo
+  echo "Installing packages"
+  jexec $jail_name sh -c 'ASSUME_ALWAYS_YES=yes;cat /pkg.list | xargs pkg install'
+fi
 if [ -x ${user_flavor}/rc.root ] ; then
   echo
   echo "Running /rc.root"
