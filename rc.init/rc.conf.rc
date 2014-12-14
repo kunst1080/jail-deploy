@@ -1,6 +1,7 @@
-echo " ${PREFIX}/${jail_name}/etc/rc.conf"
-cp -p ${PREFIX}/${jail_name}/etc/rc.conf ${PREFIX}/${jail_name}/etc/rc.conf.org
-cat <<++EOS >>${PREFIX}/${jail_name}/etc/rc.conf
+FILE=${PREFIX}/${jail_name}/etc/rc.conf
+echo " $FILE"
+cp -p $FILE ${FILE}.org
+cat <<++EOS >>$FILE
 
 sshd_enable="YES"
 ++EOS

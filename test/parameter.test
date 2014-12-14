@@ -63,6 +63,7 @@ I will create a Jail with the following.
 Creating a Jail
 Successfully created  testjail
 Successful enabled allow.raw_sockets for testjail
+Successfully enabled allow.sysvipc for testjail
 
 Running initial setting scripts
  /usr/jails/testjail/etc/rc.conf
@@ -101,6 +102,7 @@ create? [y/n]:
 Creating a Jail
 Successfully created  testjail
 Successful enabled allow.raw_sockets for testjail
+Successfully enabled allow.sysvipc for testjail
 
 Running initial setting scripts
  /usr/jails/testjail/etc/rc.conf

@@ -1,6 +1,7 @@
-echo " ${PREFIX}/${jail_name}/etc/ssh/sshd_config"
-cp -p ${PREFIX}/${jail_name}/etc/ssh/sshd_config ${PREFIX}/${jail_name}/etc/ssh/sshd_config.org
-cat ${PREFIX}/${jail_name}/etc/ssh/sshd_config.org \
+FILE=${PREFIX}/${jail_name}/etc/ssh/sshd_config
+echo " $FILE"
+cp -p $FILE ${FILE}.org
+cat ${FILE}.org \
   | sed "s/^#Port 22/Port 22/g" \
   | sed "s/^#ListenAddress 0.0.0.0/ListenAddress ${ip_address}/g" \
   | sed "s/^#Protocol 2/Protocol 2/g" \
@@ -11,4 +12,4 @@ cat ${PREFIX}/${jail_name}/etc/ssh/sshd_config.org \
   | sed "s/^#PermitEmptyPasswords no/PermitEmptyPasswords no/g" \
   | sed "s/^#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/g" \
   | sed "s/^#UseDNS yes/UseDNS no/g" \
-  >${PREFIX}/${jail_name}/etc/ssh/sshd_config
+  >$FILE

@@ -120,6 +120,7 @@ echo "--- SETUP START ---"
 echo "Creating a Jail"
 qjail create -n $NIC -4 $ip_address $jail_name
 qjail config -k $jail_name
+qjail config -y $jail_name
 
 echo
 echo "Running initial setting scripts"
