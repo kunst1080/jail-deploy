@@ -5,3 +5,7 @@ cat <<++EOS >>$FILE
 
 sshd_enable="YES"
 ++EOS
+
+if [ -r ${user_flavor}/rc.conf.setting ] ; then
+  cat ${user_flavor}/rc.conf.setting >> $FILE
+fi
