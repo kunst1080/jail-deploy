@@ -66,6 +66,7 @@ Successful enabled allow.raw_sockets for testjail
 Successfully enabled allow.sysvipc for testjail
 
 Running initial setting scripts
+ /usr/jails/testjail/etc/hosts
  /usr/jails/testjail/etc/rc.conf
  /usr/jails/testjail/etc/ssh/sshd_config
 
@@ -105,6 +106,7 @@ Successful enabled allow.raw_sockets for testjail
 Successfully enabled allow.sysvipc for testjail
 
 Running initial setting scripts
+ /usr/jails/testjail/etc/hosts
  /usr/jails/testjail/etc/rc.conf
  /usr/jails/testjail/etc/ssh/sshd_config
 

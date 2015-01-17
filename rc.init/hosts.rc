@@ -1,0 +1,7 @@
+FILE=${PREFIX}/${jail_name}/etc/hosts
+echo " $FILE"
+cp -p $FILE ${FILE}.org
+cat <<++EOS >>$FILE
+
+$ip_address $jail_name
+++EOS
