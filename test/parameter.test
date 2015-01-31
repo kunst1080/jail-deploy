@@ -32,7 +32,7 @@ assert() {
 
 # setup
 cd $DIR/..
-usage="USAGE:jail-deploy -4 ip_address -f user_flavor [ -s sshkey ] [ -y -P root_password -u default_user -p default_user_password ] jail_name
+usage="USAGE:jail-deploy -4 ip_address -f user_flavor [ -y ] [ -s sshkey ] -P root_password -u default_user -p default_user_password jail_name
 
 user_flavor files
     - rc.root   Initial-Script executed by root.
@@ -48,7 +48,6 @@ test_sshkey=$HOME/.ssh/authorized_keys
 # tests - OK
 assert "sudo ./jail-deploy -4 $test_ip -f $test_flavor -s $test_sshkey -y -P 1234 -u bbb -p 1111 $test_name && grep 'sshd_enable=\"YES\"' /usr/jails/$test_name/etc/rc.conf && grep 'Port 22' /usr/jails/$test_name/etc/ssh/sshd_config" \
   "sudo qjail stop $test_name && sudo qjail delete $test_name" <<++EOS
-
 I will create a Jail with the following.
   jail_name :$test_name
   ip_address :$test_ip
@@ -85,9 +84,8 @@ Port 22
 
 vmode=0
 
-assert "yes | head -1 | awk '{print \"1234\\naaa\\n1111\\ny\"}' | sudo ./jail-deploy -4 $test_ip -f $test_flavor $test_name" \
+assert "yes | head -1 | awk '{print \"y\"}' | sudo ./jail-deploy -4 $test_ip -f $test_flavor -P 1234 -u aaa -p 1111 $test_name" \
   "sudo qjail stop $test_name && sudo qjail delete $test_name" <<++EOS
-Input root password: Input default username: Input default user password: 
 I will create a Jail with the following.
   jail_name :$test_name
   ip_address :$test_ip

@@ -4,7 +4,7 @@ set -ue
 
 USAGE_EXIT(){
   cat <<++EOS >&2
-USAGE:`basename $0` -4 ip_address -f user_flavor [ -s sshkey ] [ -y -P root_password -u default_user -p default_user_password ] jail_name
+USAGE:`basename $0` -4 ip_address -f user_flavor [ -y ] [ -s sshkey ] -P root_password -u default_user -p default_user_password jail_name
 
 user_flavor files
     - rc.root   Initial-Script executed by root.
@@ -63,22 +63,11 @@ jail_name="$1"
 # check parameters
 if [ "_$ip_address" = "_" -o \
     "_$user_flavor" = "_" -o \
+    "_$root_password" = "_" -o \
+    "_$default_user" = "_" -o \
+    "_$default_user_password" = "_" -o \
     "_$jail_name" = "_" ]; then
   USAGE_EXIT
-fi
-if [ $batchmode -eq 1 ]; then
-  if [ "_$root_password" = "_" -o \
-    "_$default_user" = "_" -o \
-    "_$default_user_password" = "_" ]; then
-    USAGE_EXIT
-  fi
-else
-  echo -n "Input root password: "
-  read root_password
-  echo -n "Input default username: "
-  read default_user
-  echo -n "Input default user password: "
-  read default_user_password
 fi
 
 # check jails
@@ -93,7 +82,6 @@ fi
 
 # confirm
 cat <<++EOS
-
 I will create a Jail with the following.
   jail_name :$jail_name
   ip_address :$ip_address
